@@ -1,0 +1,10 @@
+server:
+  port: 3001
+spring:
+  application:
+    name: linux-mcp-server
+  ai:
+    mcp:
+      server:
+        name: linux-mcp-server
+        version: 1.0.0
