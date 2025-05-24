@@ -14,7 +14,7 @@ public class ShellService {
     @Resource
     private RemoteShellService remoteShellService;
 
-    @Tool(description = "Execute given shell on target linux")
+    @Tool(description = "Execute given shell on a target linux or a local machine")
     public String executeShell(String machineIp, String path, String shell) {
         String result;
         if (StringUtils.isBlank(machineIp) || "127.0.0.1".equals(machineIp) || "localhost".equals(machineIp)) {
