@@ -1,5 +1,7 @@
 package com.doodl6.mcp.linux.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.annotation.PostConstruct;
@@ -14,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +27,7 @@ public class RemoteShellService {
 
     private final Map<String, HostConfig> hostConfigs;
 
-    private static final String CONFIG_FILE = "classpath:host.config";
+    private static final String CONFIG_FILE = "classpath:hosts.json";
 
     /**
      * 缓存池，存储 machineIp -> SSHClient
@@ -67,26 +70,24 @@ public class RemoteShellService {
     private void loadHostConfigs() {
         try {
             Resource resource = resourceLoader.getResource(CONFIG_FILE);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    line = line.trim();
-                    if (line.isEmpty() || line.startsWith("#")) {
-                        continue; // 跳过空行和注释
-                    }
-                    String[] parts = line.split("\\s+");
-                    if (parts.length != 3) {
-                        System.err.println("Invalid config line: " + line);
-                        continue;
-                    }
-                    String ip = parts[0];
-                    String username = parts[1];
-                    String password = parts[2];
+            ObjectMapper objectMapper = new ObjectMapper();
+            
+            // 解析JSON数组配置
+            List<Map<String, String>> hosts = objectMapper.readValue(resource.getInputStream(), new TypeReference<List<Map<String, String>>>() {});
+            
+            for (Map<String, String> host : hosts) {
+                String ip = host.get("ip");
+                String username = host.get("username");
+                String password = host.get("password");
+                
+                if (ip != null && username != null && password != null) {
                     hostConfigs.put(ip, new HostConfig(username, password));
+                } else {
+                    System.err.println("Invalid host config: missing required fields (ip, username, password)");
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load host.config: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to load hosts.json: " + e.getMessage(), e);
         }
     }
 
