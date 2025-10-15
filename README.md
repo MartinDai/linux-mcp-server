@@ -5,7 +5,6 @@
 ## 目录
 - [简介](#简介)
 - [功能亮点](#功能亮点)
-- [架构概览](#架构概览)
 - [快速开始](#快速开始)
 - [配置说明](#配置说明)
 - [与 AI 助手集成](#与-ai-助手集成)
@@ -22,31 +21,6 @@ Linux MCP Server 将 Shell 执行封装成一个 MCP 工具 `executeShell`，由
 - **轻量配置**：使用简单的 `hosts.json` 维护远程主机清单，可热重启生效。
 - **Spring Boot 原生集成**：开箱即用的 `mvn spring-boot:run`/可执行 JAR 部署方式，默认监听 `3001` 端口。
 - **MCP 协议兼容**：依赖 `spring-ai-starter-mcp-server-webmvc`，支持 STREAMABLE HTTP 通道，适配主流 MCP 客户端。
-
-## 架构概览
-```
-┌───────────────────────────────────────────────┐
-│                Linux MCP Server               │
-│                                               │
-│   HTTP / MCP                                   │
-│   ┌───────────────────────────────────────┐    │
-│   │ ShellService (@Tool executeShell)     │    │
-│   └───────────────┬──────────────────────┘    │
-│                   │                           │
-│        ┌──────────▼──────────┐      ┌─────────▼─────────┐
-│        │ LocalShellService   │      │ RemoteShellService │
-│        │ bash -c + 工作目录  │      │ SSHJ + Caffeine    │
-│        └──────────┬──────────┘      └─────────┬─────────┘
-│                   │                           │
-│              本地文件系统                hosts.json 配置
-└───────────────────────────────────────────────┘
-```
-
-核心流程：
-1. MCP 客户端提交 `executeShell(machineIp, path, shell)` 调用。
-2. 当 `machineIp` 为空、`localhost` 或 `127.0.0.1` 时，使用本地进程运行命令。
-3. 其他地址走远程流程：加载 `hosts.json` 中的凭据，复用或新建 SSH 连接，组合 `cd path && shell` 执行。
-4. 返回标准输出，错误输出会以 `ERROR:` 前缀拼接在结果中。
 
 ## 快速开始
 ### 环境准备
@@ -132,7 +106,6 @@ spring.ai.mcp.server:
 ## 开发与调试
 - 代码结构主要位于 `src/main/java/com/doodl6/mcp/linux`，可按需扩展新的工具方法。
 - 如需调整 SSH 缓存策略，可修改 `RemoteShellService` 中的 `CACHE_DURATION_MINUTES`、`MAX_CACHE_SIZE`。
-- 执行格式化或质量检查：`mvn spotless:apply` / `mvn test`（若后续添加测试）。
 - 修改完成后建议手动触发一次 `executeShell`（本地与远程各一次）验证输出与错误处理逻辑。
 
 ## 许可证
