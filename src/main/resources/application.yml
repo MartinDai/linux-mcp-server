@@ -8,3 +8,6 @@ spring:
       server:
         name: linux-mcp-server
         version: 1.0.0
+        protocol: STREAMABLE
+        streamable-http:
+          mcp-endpoint: /mcp
