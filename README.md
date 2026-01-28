@@ -58,7 +58,7 @@ mvn spring-boot:run
 或打包独立运行：
 ```bash
 mvn clean package
-java -jar target/linux-mcp-server-0.0.1-SNAPSHOT.jar
+java -jar target/linux-mcp-server-1.0.0.jar
 ```
 启动完成后，默认在 `http://localhost:3001/mcp` 暴露 MCP 接入点。
 
