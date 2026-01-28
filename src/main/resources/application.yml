@@ -10,4 +10,4 @@ spring:
         version: 1.0.0
         protocol: STREAMABLE
         streamable-http:
-          mcp-endpoint: /mcp
+          mcpEndpoint: /mcp
